@@ -449,12 +449,16 @@ img.is-mono {
   flex-shrink: 0;
 }
 
+.band-wrap {
+  overflow: hidden;
+  padding-block: clamp(32px, 5vw, 72px);
+}
+
 .band {
   padding-block: clamp(28px, 4vw, 56px);
   background: var(--accent);
   color: var(--accent-ink);
   transform: rotate(-2deg) scale(1.04);
-  margin-block: clamp(32px, 5vw, 72px);
 }
 
 .band__item {

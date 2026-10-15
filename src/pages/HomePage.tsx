@@ -15,6 +15,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <div className="band-wrap">
       <Marquee className="band" speed={28} label={words.join(", ")}>
         {words.map((w) => (
           <span key={w} className="band__item display">
@@ -23,6 +24,7 @@ export default function HomePage() {
           </span>
         ))}
       </Marquee>
+      </div>
       <About />
       <Projects featuredOnly />
       <Skills compact />

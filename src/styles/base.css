@@ -4,12 +4,9 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  overflow-x: clip;
-}
-
 html {
+  /* Clip, not hidden: hidden would make a scroll container and break position: sticky. */
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -23,7 +20,6 @@ body {
   line-height: 1.5;
   font-kerning: normal;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 img,

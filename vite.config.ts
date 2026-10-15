@@ -7,6 +7,20 @@ export default defineConfig({
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
+  optimizeDeps: {
+    include: [
+      "three",
+      "three/examples/jsm/postprocessing/EffectComposer.js",
+      "three/examples/jsm/postprocessing/RenderPass.js",
+      "three/examples/jsm/postprocessing/UnrealBloomPass.js",
+      "three/examples/jsm/postprocessing/OutputPass.js",
+      "gsap",
+      "gsap/ScrollTrigger",
+      "gsap/SplitText",
+      "@gsap/react",
+      "lenis",
+    ],
+  },
   build: {
     rollupOptions: {
       output: {

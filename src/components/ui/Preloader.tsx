@@ -16,13 +16,23 @@ export function Preloader() {
   useGSAP(
     () => {
       if (played) return;
-      played = true;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const finish = () => {
+        played = true;
         setDone(true);
+      };
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        finish();
         return;
       }
+      // Never let the overlay trap the page, whatever happens to the timeline.
+      const safety = window.setTimeout(finish, (PRELOAD_SECONDS + 1.5) * 1000);
       const n = { v: 0 };
-      const tl = gsap.timeline({ onComplete: () => setDone(true) });
+      const tl = gsap.timeline({
+        onComplete: () => {
+          window.clearTimeout(safety);
+          finish();
+        },
+      });
       tl.from(".pre__kanji", { yPercent: 30, opacity: 0, duration: 0.9, ease: "expo.out" })
         .to(n, {
           v: 100,
@@ -36,6 +46,7 @@ export function Preloader() {
         .to(".pre__inner", { opacity: 0, y: -30, duration: 0.4, ease: "power2.in" }, 1.35)
         .to(".pre__half--top", { yPercent: -100, duration: 0.8, ease: "expo.inOut" }, 1.45)
         .to(".pre__half--bottom", { yPercent: 100, duration: 0.8, ease: "expo.inOut" }, 1.45);
+      return () => window.clearTimeout(safety);
     },
     { scope: root },
   );
