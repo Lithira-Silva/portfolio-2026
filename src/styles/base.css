@@ -4,6 +4,43 @@
   box-sizing: border-box;
 }
 
+/* Themed scrollbar: deep-water track, koi-orange thumb. */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid var(--bg);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent), #c8432a);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff8a63, var(--accent));
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg);
+}
+
+@supports (-moz-appearance: none) {
+  html {
+    scrollbar-color: var(--accent) var(--bg);
+    scrollbar-width: thin;
+  }
+}
+
+/* Held still while the preloader plays. */
+html.is-booting,
+html.is-booting body {
+  overflow: hidden;
+}
+
 html {
   /* Clip, not hidden: hidden would make a scroll container and break position: sticky. */
   overflow-x: clip;

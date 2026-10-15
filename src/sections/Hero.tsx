@@ -4,7 +4,7 @@ import { site, climb } from "@/data/site";
 import KoiPond from "@/components/three/KoiPond";
 import { Button } from "@/components/ui/Button";
 import { scrollToId } from "@/hooks/useLenis";
-import { PRELOAD_SECONDS } from "@/components/ui/Preloader";
+import { onBooted } from "@/lib/boot";
 
 const chapterKanji = ["流", "滝", "龍"];
 
@@ -28,13 +28,15 @@ export function Hero() {
 
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const intro = gsap.timeline({ delay: PRELOAD_SECONDS - 0.5 });
+        // Hold the entrance until the preloader has handed over.
+        const intro = gsap.timeline({ paused: true });
         intro
           .from(".pond-cover", { opacity: 1, duration: 1.6, ease: "power2.inOut" })
           .from(".corner--tl .corner__in", { yPercent: 105, duration: 1.4, ease: "expo.out" }, 0.3)
           .from(".corner--br .corner__in", { yPercent: -105, duration: 1.4, ease: "expo.out" }, 0.45)
           .from(".hero__intro > *", { y: 32, opacity: 0, stagger: 0.1, duration: 1 }, 0.8)
           .from(".hero__foot > *", { opacity: 0, y: 12, stagger: 0.1, duration: 0.8 }, 1.2);
+        const off = onBooted(() => intro.play());
 
         gsap.to(".hero__intro", {
           yPercent: -40,
@@ -87,6 +89,7 @@ export function Hero() {
           ease: "none",
           scrollTrigger: { trigger: root.current, start: "top top", end: "bottom bottom", scrub: true },
         });
+        return off;
       });
     },
     { scope: root },

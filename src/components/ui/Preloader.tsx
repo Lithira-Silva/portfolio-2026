@@ -1,23 +1,21 @@
 import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { finishBoot, isBooted } from "@/lib/boot";
 
-/** Seconds the first-load intro takes; the hero waits this long before its own entrance. */
+/** Seconds the loader runs before it hands over to the hero. */
 export const PRELOAD_SECONDS = 2.1;
 
-let played = false;
-export const preloaderPlayed = () => played;
-
-/** First visit only: the koi kanji is drawn, a counter fills, the water parts. */
+/** First visit only: the koi kanji appears, a counter fills, the water parts. */
 export function Preloader() {
   const root = useRef<HTMLDivElement>(null);
   const count = useRef<HTMLSpanElement>(null);
-  const [done, setDone] = useState(played);
+  const [done, setDone] = useState(isBooted);
 
   useGSAP(
     () => {
-      if (played) return;
+      if (isBooted()) return;
       const finish = () => {
-        played = true;
+        finishBoot();
         setDone(true);
       };
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -34,14 +32,18 @@ export function Preloader() {
         },
       });
       tl.from(".pre__kanji", { yPercent: 30, opacity: 0, duration: 0.9, ease: "expo.out" })
-        .to(n, {
-          v: 100,
-          duration: 1.2,
-          ease: "power2.inOut",
-          onUpdate: () => {
-            if (count.current) count.current.textContent = String(Math.round(n.v)).padStart(3, "0");
+        .to(
+          n,
+          {
+            v: 100,
+            duration: 1.2,
+            ease: "power2.inOut",
+            onUpdate: () => {
+              if (count.current) count.current.textContent = String(Math.round(n.v)).padStart(3, "0");
+            },
           },
-        }, 0.1)
+          0.1,
+        )
         .to(".pre__bar-fill", { scaleX: 1, duration: 1.2, ease: "power2.inOut" }, 0.1)
         .to(".pre__inner", { opacity: 0, y: -30, duration: 0.4, ease: "power2.in" }, 1.35)
         .to(".pre__half--top", { yPercent: -100, duration: 0.8, ease: "expo.inOut" }, 1.45)
