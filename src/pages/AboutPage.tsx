@@ -7,7 +7,7 @@ export default function AboutPage() {
   usePageTitle("About");
   return (
     <>
-      <PageTitle title="About" intro="A developer who treats the database and the animation curve with the same care." />
+      <PageTitle title="About" intro="IT student at SLIIT and full-stack developer, always learning the next thing." />
       <About full />
       <figure className="plate wrap">
         <img
@@ -21,7 +21,7 @@ export default function AboutPage() {
           Totoya Hokkei, Oniwakamaru and the giant carp, around 1830. The Met, public domain.
         </figcaption>
       </figure>
-      <Skills limit={6} />
+      <Skills limit={10} />
     </>
   );
 }

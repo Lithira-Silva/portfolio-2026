@@ -25,8 +25,8 @@ export function Contact({ withComposer = false }: ContactProps) {
   const rows = [
     { text: site.email, href: `mailto:${site.email}` },
     site.phone ? { text: site.phone, href: `tel:${site.phone.replace(/\s/g, "")}` } : null,
-    { text: site.location },
-    { text: `Replies within a day, ${site.timezone}` },
+    ...site.socials.map((s) => ({ text: s.href.replace(/^https?:[/][/]/, ""), href: s.href })),
+    { text: `${site.location}, ${site.timezone}` },
     { text: site.availability },
   ].filter(Boolean) as Array<{ text: string; href?: string }>;
 

@@ -26,6 +26,7 @@ export interface Project {
   summary: string;
   year: number;
   role: string;
+  status?: string;
   stack: string[];
   image: string;
   alt: string;
@@ -35,13 +36,13 @@ export interface Project {
   featured?: boolean;
 }
 
-export type SkillLevel = "Daily" | "Often" | "Learning";
-
 export interface Skill {
   group: string;
   name: string;
-  level: SkillLevel;
-  years: number;
+  /** Project titles that use it; filled in from projects.ts. */
+  usedIn?: string[];
+  /** Other proof, such as a certificate. */
+  note?: string;
 }
 
 export interface Certificate {
@@ -49,7 +50,10 @@ export interface Certificate {
   issuer: string;
   date: string;
   id?: string;
+  /** Online verification page. */
   url?: string;
+  /** Copy of the certificate in public/certificates/. */
+  pdf?: string;
 }
 
 export interface RecordLine {

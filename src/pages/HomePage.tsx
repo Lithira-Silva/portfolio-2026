@@ -13,7 +13,7 @@ export default function HomePage() {
       <Hero />
       <About />
       <Projects featuredOnly />
-      <Skills limit={8} />
+      <Skills limit={10} />
       <Certificates />
       <Contact />
     </>

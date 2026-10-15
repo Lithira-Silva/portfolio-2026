@@ -6,7 +6,7 @@ export default function ContactPage() {
   usePageTitle("Contact");
   return (
     <>
-      <PageTitle title="Contact" intro="Freelance, full-time or just a question about the koi. I reply within a day." />
+      <PageTitle title="Contact" intro="Internships, collaborations, or a question about the koi." />
       <Contact withComposer />
     </>
   );

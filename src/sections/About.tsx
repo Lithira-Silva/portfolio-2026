@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { facts, story } from "@/data/site";
-import { experience, education } from "@/data/experience";
+import { education, focus } from "@/data/experience";
 import { useReveal } from "@/hooks/useReveal";
 import { ArrowLink } from "@/components/ui/Button";
 
@@ -40,10 +40,10 @@ export function About({ full = false }: AboutProps) {
       </div>
 
       <div className="about__row about__row--record">
-        <h3 className="about__label">Record</h3>
+        <h3 className="about__label">Education and focus</h3>
         <div className="about__lists">
           <ul className="record" data-reveal>
-            {experience.map((r) => (
+            {education.map((r) => (
               <li key={r.name}>
                 <span>
                   {r.name} <span className="muted">· {r.detail}</span>
@@ -53,12 +53,11 @@ export function About({ full = false }: AboutProps) {
             ))}
           </ul>
           <ul className="record" data-reveal>
-            {education.map((r) => (
+            {focus.map((r) => (
               <li key={r.name}>
                 <span>
                   {r.name} <span className="muted">· {r.detail}</span>
                 </span>
-                <span className="muted tabular">{r.year}</span>
               </li>
             ))}
           </ul>

@@ -164,7 +164,7 @@
 
 @media (max-width: 760px) {
   .corner {
-    font-size: 26vw;
+    font-size: 21vw;
   }
 
   .hero__intro {
@@ -641,6 +641,27 @@
   font-weight: 700;
   font-size: 1.5rem;
   transform: rotate(-4deg);
+}
+
+.certs--empty {
+  min-height: auto;
+  padding-block: var(--section);
+  display: grid;
+  gap: 24px;
+}
+
+.certs__id {
+  display: block;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.certs__actions {
+  white-space: nowrap;
+}
+
+.certs__actions a + a {
+  margin-left: 20px;
 }
 
 .certs__more {

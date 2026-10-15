@@ -52,6 +52,7 @@ export function Projects({ featuredOnly = false, showTitle = true }: ProjectsPro
           <li className={`work__item work__item--${i % 3}`}>
             <p className="work__name small muted" data-reveal>
               {p.title} · {p.year}
+              {p.status && ` · ${p.status}`}
             </p>
             <a
               className="work__frame"
@@ -68,7 +69,8 @@ export function Projects({ featuredOnly = false, showTitle = true }: ProjectsPro
             <div className="work__meta" data-reveal>
               <p>{p.summary}</p>
               <p className="small muted">
-                {p.role} · {p.stack.join(", ")}
+                {p.role}
+                {p.stack.length > 0 && ` · ${p.stack.join(", ")}`}
               </p>
               <p className="work__links small">
                 {p.live && (
@@ -86,7 +88,7 @@ export function Projects({ featuredOnly = false, showTitle = true }: ProjectsPro
           </li>
           {i === 1 && (
             <li className="work__remark lead" data-reveal>
-              Every project ships with a performance budget and a page that works without JavaScript.
+              I learn by building: each project here pushed me into a new part of the stack.
             </li>
           )}
           </Fragment>
@@ -94,7 +96,7 @@ export function Projects({ featuredOnly = false, showTitle = true }: ProjectsPro
       </ol>
       {featuredOnly && (
         <div className="work__more" data-reveal>
-          <ArrowLink to="/projects">All {projects.length} projects</ArrowLink>
+          <ArrowLink to="/projects">Project details</ArrowLink>
         </div>
       )}
     </section>

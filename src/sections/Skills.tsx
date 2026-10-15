@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
-import { skills } from "@/data/skills";
-import type { SkillLevel } from "@/types/content";
+import { skills, skillGroups } from "@/data/skills";
 import { useReveal } from "@/hooks/useReveal";
 import { ArrowLink } from "@/components/ui/Button";
 
@@ -8,15 +7,15 @@ interface SkillsProps {
   limit?: number;
 }
 
-const filters: Array<SkillLevel | "All"> = ["All", "Daily", "Often", "Learning"];
+const filters = ["All", ...skillGroups];
 
 /** Statement, table pushed right. Rows are grouped by space, never lines. */
 export function Skills({ limit }: SkillsProps) {
   const root = useRef<HTMLElement>(null);
-  const [level, setLevel] = useState<SkillLevel | "All">("All");
+  const [group, setGroup] = useState("All");
   useReveal(root);
 
-  const rows = skills.filter((s) => level === "All" || s.level === level).slice(0, limit);
+  const rows = skills.filter((s) => group === "All" || s.group === group).slice(0, limit);
 
   return (
     <section ref={root} id="skills" className="skills wrap" aria-labelledby="skills-title">
@@ -39,13 +38,13 @@ export function Skills({ limit }: SkillsProps) {
 
         <div className="skills__table">
           {!limit && (
-            <div className="skills__filters" role="group" aria-label="Filter by how often I use it" data-reveal>
+            <div className="skills__filters" role="group" aria-label="Filter by area" data-reveal>
               {filters.map((f) => (
                 <button
                   key={f}
-                  className={`chip ${level === f ? "is-on" : ""}`}
-                  aria-pressed={level === f}
-                  onClick={() => setLevel(f)}
+                  className={`chip ${group === f ? "is-on" : ""}`}
+                  aria-pressed={group === f}
+                  onClick={() => setGroup(f)}
                 >
                   {f}
                 </button>
@@ -62,9 +61,7 @@ export function Skills({ limit }: SkillsProps) {
               >
                 <span className="muted">{s.group}</span>
                 <span className="skills__name">{s.name}</span>
-                <span className="skills__level tabular">
-                  {s.level} · {s.years} {s.years === 1 ? "yr" : "yrs"}
-                </span>
+                <span className="skills__level">{s.usedIn?.length ? `In ${s.usedIn.join(", ")}` : s.note ?? ""}</span>
               </li>
             ))}
           </ul>

@@ -45,6 +45,19 @@ export function Certificates({ withIndex = false }: CertificatesProps) {
   };
   const onUp = () => (drag.current.down = false);
 
+  if (!certificates.length) {
+    return (
+      <section ref={root} id="certificates" className="certs certs--empty wrap" aria-labelledby="certs-title">
+        <h2 id="certs-title" className="head" data-split>
+          Certificates
+        </h2>
+        <p className="lead" data-reveal>
+          New credentials are on the way.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section ref={root} id="certificates" className="certs" aria-labelledby="certs-title">
       <h2 id="certs-title" className="certs__title wrap">
@@ -62,7 +75,7 @@ export function Certificates({ withIndex = false }: CertificatesProps) {
       >
         {certificates.map((c) => (
           <li key={c.title} className="cert">
-            <a href={c.url} target="_blank" rel="noreferrer" className="cert__face" draggable={false}>
+            <a href={c.url ?? c.pdf} target="_blank" rel="noreferrer" className="cert__face" draggable={false}>
               <span className="cert__name display">{c.title}</span>
               <span className="cert__foot">
                 <span className="small">
@@ -96,13 +109,21 @@ export function Certificates({ withIndex = false }: CertificatesProps) {
             <tbody>
               {certificates.map((c) => (
                 <tr key={c.title} data-reveal>
-                  <td>{c.title}</td>
+                  <td>
+                    {c.title}
+                    {c.id && <span className="certs__id small muted">ID {c.id}</span>}
+                  </td>
                   <td className="muted">{c.issuer}</td>
                   <td className="tabular">{c.date}</td>
-                  <td>
+                  <td className="certs__actions">
                     {c.url && (
                       <a href={c.url} target="_blank" rel="noreferrer" className="arrow-link">
                         Verify
+                      </a>
+                    )}
+                    {c.pdf && (
+                      <a href={c.pdf} target="_blank" rel="noreferrer" className="arrow-link">
+                        PDF
                       </a>
                     )}
                   </td>
@@ -113,7 +134,7 @@ export function Certificates({ withIndex = false }: CertificatesProps) {
         </div>
       ) : (
         <div className="certs__more wrap" data-reveal>
-          <ArrowLink to="/certificates">Every credential, with links</ArrowLink>
+          <ArrowLink to="/certificates">Every credential, with PDFs</ArrowLink>
         </div>
       )}
     </section>

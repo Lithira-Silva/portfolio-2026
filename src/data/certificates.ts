@@ -1,15 +1,33 @@
 import type { Certificate } from "@/types/content";
 
-// SAMPLE CONTENT — replace with credentials you actually hold, with their verification links.
 export const certificates: Certificate[] = [
-  { title: "Solutions Architect Associate", issuer: "Amazon Web Services", date: "2026", url: "https://aws.amazon.com/certification/" },
-  { title: "Professional Cloud Developer", issuer: "Google Cloud", date: "2025", url: "https://cloud.google.com/learn/certification" },
-  { title: "Kubernetes Application Developer", issuer: "CNCF", date: "2025", url: "https://www.cncf.io/" },
-  { title: "Meta Front-End Developer", issuer: "Meta via Coursera", date: "2025", url: "https://www.coursera.org/" },
-  { title: "Building with the Claude API", issuer: "Anthropic Academy", date: "2026", url: "https://www.anthropic.com/" },
-  { title: "JavaScript Algorithms", issuer: "freeCodeCamp", date: "2024", url: "https://www.freecodecamp.org/" },
-  { title: "MongoDB Associate Developer", issuer: "MongoDB University", date: "2024", url: "https://learn.mongodb.com/" },
-  { title: "Web Accessibility", issuer: "W3C via edX", date: "2024", url: "https://www.edx.org/" },
-  { title: "Responsive Web Design", issuer: "freeCodeCamp", date: "2023", url: "https://www.freecodecamp.org/" },
-  { title: "Azure Fundamentals", issuer: "Microsoft", date: "2023", url: "https://learn.microsoft.com/" },
+  {
+    title: "The Complete Full-Stack Web Development Bootcamp",
+    issuer: "Udemy",
+    date: "Sep 2025",
+    id: "UC-243d51d1-8b87-42c8-b295-16cb1252aa37",
+    url: "https://ude.my/UC-243d51d1-8b87-42c8-b295-16cb1252aa37",
+    pdf: "/certificates/udemy-full-stack-bootcamp.pdf",
+  },
+  {
+    title: "Getting Started with DevOps on AWS",
+    issuer: "AWS Training & Certification",
+    date: "Aug 2025",
+    pdf: "/certificates/aws-devops-getting-started.pdf",
+  },
+  {
+    title: "ChatGPT Prompt Engineering Mastery",
+    issuer: "Udemy",
+    date: "Jun 2025",
+    id: "UC-d5d4877c-3197-4780-911e-11c37be0a162",
+    url: "https://ude.my/UC-d5d4877c-3197-4780-911e-11c37be0a162",
+    pdf: "/certificates/udemy-chatgpt-prompt-engineering.pdf",
+  },
+  {
+    title: "Certificate in Software Engineering",
+    issuer: "NIBM, Sri Lanka",
+    date: "Oct 2020",
+    id: "CSE20121",
+    pdf: "/certificates/nibm-software-engineering.pdf",
+  },
 ];

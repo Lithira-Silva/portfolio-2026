@@ -6,7 +6,7 @@ export default function CertificatesPage() {
   usePageTitle("Certificates");
   return (
     <>
-      <PageTitle title="Certified" intro="Credentials I have earned, each with a link you can verify." />
+      <PageTitle title="Certified" intro="Courses and programmes I have completed, with the certificates to show it." />
       <Certificates withIndex />
     </>
   );

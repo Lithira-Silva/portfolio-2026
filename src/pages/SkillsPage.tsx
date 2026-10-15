@@ -6,7 +6,7 @@ export default function SkillsPage() {
   usePageTitle("Skills");
   return (
     <>
-      <PageTitle title="Skills" intro="What I use every day, what I use often, and what I am learning right now." />
+      <PageTitle title="Skills" intro="The languages, frameworks and tools I build with." />
       <Skills />
     </>
   );
