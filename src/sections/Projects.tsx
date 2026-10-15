@@ -79,7 +79,6 @@ export function Projects({ featuredOnly = false }: ProjectsProps) {
                         <li key={s} className="stack-chip small">
                           {logo && (
                             <img
-                              className={logo.mono ? "is-mono" : undefined}
                               src={`/media/tech/${logo.logo}.svg`}
                               alt=""
                               width={16}

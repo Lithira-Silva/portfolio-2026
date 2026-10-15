@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { skills, skillGroups, logoSkills } from "@/data/skills";
 import type { Skill } from "@/types/content";
 import { Section } from "@/components/ui/Section";
@@ -11,42 +12,39 @@ interface SkillsProps {
   compact?: boolean;
 }
 
+type CSSVars = CSSProperties & Record<`--${string}`, string>;
+
+const brand = (skill: Skill): CSSVars => ({ "--brand": skill.color ?? "#ff6b3d" });
+
 function Logo({ skill, size = 40 }: { skill: Skill; size?: number }) {
-  if (!skill.logo) {
-    const initials = skill.name
-      .split(/\s+/)
-      .filter((w) => /^[A-Za-z]/.test(w) && w !== "and")
-      .map((w) => w[0])
-      .join("")
-      .slice(0, 2);
-    return (
-      <span className="tile__mono display" style={{ width: size, height: size }} aria-hidden="true">
-        {initials}
-      </span>
-    );
-  }
   return (
-    <img
-      className={skill.mono ? "is-mono" : undefined}
-      src={`/media/tech/${skill.logo}.svg`}
-      alt=""
-      width={size}
-      height={size}
-      loading="lazy"
-    />
+    <img className="logo-img" src={`/media/tech/${skill.logo}.svg`} alt="" width={size} height={size} loading="lazy" decoding="async" />
+  );
+}
+
+/** A squircle icon on a soft glow in the brand's own colour. */
+function Icon({ skill, size = 34 }: { skill: Skill; size?: number }) {
+  return (
+    <span className="icon" style={brand(skill)} aria-hidden="true">
+      <span className="icon__glow" />
+      <Logo skill={skill} size={size} />
+    </span>
   );
 }
 
 function Tile({ skill }: { skill: Skill }) {
-  const tilt = useTilt(14);
-  const proof = skill.usedIn?.length ? `In ${skill.usedIn.join(", ")}` : skill.note;
+  const tilt = useTilt(12);
+  const proof = skill.usedIn?.length ? `Used in ${skill.usedIn.join(", ")}` : skill.note;
   return (
-    <li className="tile" {...tilt} title={proof}>
-      <span className="tile__logo">
-        <Logo skill={skill} />
-      </span>
+    <li className="tile" style={brand(skill)} {...tilt}>
+      <Icon skill={skill} />
       <span className="tile__name">{skill.name}</span>
-      {proof && <span className="tile__proof">{proof}</span>}
+      {proof && (
+        <span className="tile__proof" title={proof}>
+          <span className="tile__dot" aria-hidden="true" />
+          {skill.usedIn?.length === 1 ? skill.usedIn[0] : skill.usedIn?.length ? `${skill.usedIn.length} projects` : "Certified"}
+        </span>
+      )}
     </li>
   );
 }
@@ -69,16 +67,16 @@ export function Skills({ withTable = false, compact = false }: SkillsProps) {
       <div className="skills__marquees" aria-label={`Technologies: ${logoSkills.map((s) => s.name).join(", ")}`}>
         <Marquee speed={40}>
           {logoSkills.slice(0, Math.ceil(logoSkills.length / 2)).map((s) => (
-            <span key={s.name} className="logo-pill">
-              <Logo skill={s} size={28} />
+            <span key={s.name} className="logo-pill" style={brand(s)}>
+              <Logo skill={s} size={22} />
               {s.name}
             </span>
           ))}
         </Marquee>
         <Marquee speed={46} reverse>
           {logoSkills.slice(Math.ceil(logoSkills.length / 2)).map((s) => (
-            <span key={s.name} className="logo-pill">
-              <Logo skill={s} size={28} />
+            <span key={s.name} className="logo-pill" style={brand(s)}>
+              <Logo skill={s} size={22} />
               {s.name}
             </span>
           ))}
@@ -89,7 +87,7 @@ export function Skills({ withTable = false, compact = false }: SkillsProps) {
         {groups.map((g) => {
           const items = skills.filter((s) => s.group === g);
           return (
-            <div key={g} className={`bento__card bento__card--${items.length > 6 ? "wide" : "std"}`} data-reveal>
+            <div key={g} className={`bento__card bento__card--span${items.length >= 6 ? 3 : items.length >= 4 ? 2 : 1}`} data-reveal>
               <h3 className="bento__title">
                 {g}
                 <span className="muted tabular">{items.length}</span>
@@ -119,7 +117,7 @@ export function Skills({ withTable = false, compact = false }: SkillsProps) {
               <tr key={s.name} data-reveal>
                 <td>
                   <span className="skills-table__name">
-                    <Logo skill={s} size={22} />
+                    <Icon skill={s} size={20} />
                     {s.name}
                   </span>
                 </td>

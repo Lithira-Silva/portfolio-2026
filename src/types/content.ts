@@ -45,8 +45,8 @@ export interface Skill {
   note?: string;
   /** File name in public/media/tech/ without .svg */
   logo?: string;
-  /** Logo is dark-on-transparent; invert it on the dark theme. */
-  mono?: boolean;
+  /** Brand colour for the tile glow. */
+  color?: string;
 }
 
 export interface Certificate {
