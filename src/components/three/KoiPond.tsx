@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPond } from "./pond";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -27,43 +27,82 @@ function hasWebGL() {
   return webglSupport;
 }
 
-export default function KoiPond({ count, interactive = true, depth, className, label }: KoiPondProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+function Fallback({ className }: { className?: string }) {
+  return (
+    <img
+      className={className}
+      src="/media/prints/hokkei-giant-carp.jpg"
+      alt="Woodblock print of a giant carp in swirling water, by Totoya Hokkei"
+      style={{ objectFit: "cover" }}
+    />
+  );
+}
+
+/** If anything in the 3D scene throws, show the print instead of taking the page down. */
+class PondBoundary extends Component<{ className?: string; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.warn("Koi pond disabled:", error);
+  }
+  render() {
+    return this.state.failed ? <Fallback className={this.props.className} /> : this.props.children;
+  }
+}
+
+function Pond({ count, interactive = true, depth, className, label }: KoiPondProps) {
+  const hostRef = useRef<HTMLDivElement>(null);
   const depthRef = useRef(depth);
   depthRef.current = depth;
   const reduced = useReducedMotion();
-  const [supported] = useState(hasWebGL);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!supported || !canvasRef.current) return;
-    const n = count ?? (window.innerWidth < 700 ? 6 : 10);
-    const pond = createPond(canvasRef.current, {
-      count: n,
-      interactive,
-      reducedMotion: reduced,
-      depth: () => depthRef.current?.() ?? 0,
-    });
-    return () => pond.dispose();
-  }, [supported, count, interactive, reduced]);
+    const host = hostRef.current;
+    if (!host) return;
+    // A fresh canvas per mount: a disposed renderer releases its context, and a
+    // released context can never be reused (React dev mode mounts effects twice).
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = `display:block;width:100%;height:100%;touch-action:pan-y;cursor:${interactive ? "pointer" : "default"}`;
+    host.appendChild(canvas);
+    let pond: ReturnType<typeof createPond> | null = null;
+    try {
+      pond = createPond(canvas, {
+        count: count ?? (window.innerWidth < 700 ? 6 : 10),
+        interactive,
+        reducedMotion: reduced,
+        depth: () => depthRef.current?.() ?? 0,
+      });
+    } catch (error) {
+      console.warn("Koi pond disabled:", error);
+      setFailed(true);
+    }
+    return () => {
+      pond?.dispose();
+      canvas.remove();
+    };
+  }, [count, interactive, reduced]);
 
-  if (!supported) {
-    return (
-      <img
-        className={className}
-        src="/media/prints/hokkei-giant-carp.jpg"
-        alt="Woodblock print of a giant carp in swirling water, by Totoya Hokkei"
-        style={{ objectFit: "cover" }}
-      />
-    );
-  }
+  if (failed) return <Fallback className={className} />;
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={hostRef}
       className={className}
       role="img"
       aria-label={label ?? "A koi pond. Click or tap the water to feed the fish."}
-      style={{ touchAction: "pan-y", cursor: interactive ? "pointer" : "default" }}
     />
+  );
+}
+
+export default function KoiPond(props: KoiPondProps) {
+  const [supported] = useState(hasWebGL);
+  if (!supported) return <Fallback className={props.className} />;
+  return (
+    <PondBoundary className={props.className}>
+      <Pond {...props} />
+    </PondBoundary>
   );
 }

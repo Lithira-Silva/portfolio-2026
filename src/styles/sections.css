@@ -1327,6 +1327,15 @@ a.contact__row:hover .contact__go {
 
 /* ---------- Misc ---------- */
 
+.crash {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  justify-items: start;
+  gap: 20px;
+  padding: var(--pad);
+}
+
 .notfound {
   padding-block: var(--section);
 }

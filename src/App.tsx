@@ -6,6 +6,34 @@ import { TransitionProvider } from "@/components/layout/Transition";
 import { Cursor } from "@/components/ui/Cursor";
 import { Preloader } from "@/components/ui/Preloader";
 import { useLenis } from "@/hooks/useLenis";
+import { Component, type ReactNode } from "react";
+import { finishBoot } from "@/lib/boot";
+
+/** Last line of defence: never leave a visitor on a black screen. */
+class AppBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.error(error);
+    finishBoot();
+  }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <main className="crash">
+        <p className="head">Something slipped.</p>
+        <p className="lead">The page hit an error while loading.</p>
+        <button className="btn btn--accent" onClick={() => window.location.reload()}>
+          <span className="btn__inner">
+            <span className="btn__label">Reload</span>
+          </span>
+        </button>
+      </main>
+    );
+  }
+}
 
 function Shell() {
   const element = useRoutes(routes);
@@ -27,11 +55,13 @@ function Shell() {
 export default function App() {
   useLenis();
   return (
+    <AppBoundary>
     <TransitionProvider>
       <Shell />
       <Cursor />
       <div className="grain" aria-hidden="true" />
       <Preloader />
     </TransitionProvider>
+    </AppBoundary>
   );
 }
