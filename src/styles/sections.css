@@ -930,8 +930,8 @@
 .tile {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto 1fr;
   justify-items: center;
+  align-content: start;
   gap: 12px;
   padding: 20px 10px 16px;
   border-radius: 18px;
@@ -1012,31 +1012,6 @@
   line-height: 1.25;
   color: var(--ink);
   transform: translateZ(18px);
-}
-
-.tile__proof {
-  align-self: end;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(60, 199, 180, 0.1);
-  color: var(--jade);
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tile__dot {
-  flex: none;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
 }
 
 .skills-table .icon {

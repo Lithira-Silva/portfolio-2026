@@ -34,17 +34,10 @@ function Icon({ skill, size = 34 }: { skill: Skill; size?: number }) {
 
 function Tile({ skill }: { skill: Skill }) {
   const tilt = useTilt(12);
-  const proof = skill.usedIn?.length ? `Used in ${skill.usedIn.join(", ")}` : skill.note;
   return (
     <li className="tile" style={brand(skill)} {...tilt}>
       <Icon skill={skill} />
       <span className="tile__name">{skill.name}</span>
-      {proof && (
-        <span className="tile__proof" title={proof}>
-          <span className="tile__dot" aria-hidden="true" />
-          {skill.usedIn?.length === 1 ? skill.usedIn[0] : skill.usedIn?.length ? `${skill.usedIn.length} projects` : "Certified"}
-        </span>
-      )}
     </li>
   );
 }

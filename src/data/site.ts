@@ -7,8 +7,7 @@ export const site: Site = {
   intro: "IT undergraduate at SLIIT, building full-stack web and mobile apps with TypeScript, React and the MERN stack.",
   location: "Sri Lanka",
   timezone: "UTC+5:30",
-  // TODO: replace with your real contact email before launch.
-  email: "hello@example.com",
+  email: "llithira3@gmail.com",
   availability: "Open to internships and collaborations",
   siteUrl: "https://github.com/Lithira-Silva/portfolio-2026",
   socials: [{ label: "GitHub", href: "https://github.com/Lithira-Silva" }],
