@@ -23,8 +23,9 @@ export function Projects({ featuredOnly = false }: ProjectsProps) {
       gsap.matchMedia().add("(prefers-reduced-motion: no-preference) and (min-width: 761px)", () => {
         const cards = gsap.utils.toArray<HTMLElement>(".work-card");
         cards.forEach((card, i) => {
-          if (i === cards.length - 1) return;
-          gsap.to(card.querySelector(".work-card__inner"), {
+          const inner = card.querySelector(".work-card__inner");
+          if (i === cards.length - 1 || !inner) return;
+          gsap.to(inner, {
             scale: 0.92,
             opacity: 0.35,
             ease: "none",
@@ -32,8 +33,10 @@ export function Projects({ featuredOnly = false }: ProjectsProps) {
           });
         });
         cards.forEach((card) => {
+          const img = card.querySelector(".browser__shot:not(.is-shot) img");
+          if (!img) return;
           gsap.fromTo(
-            card.querySelector(".browser__shot:not(.is-shot) img"),
+            img,
             { yPercent: -6, scale: 1.12 },
             {
               yPercent: 6,

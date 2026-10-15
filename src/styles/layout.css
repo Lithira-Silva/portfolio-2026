@@ -271,9 +271,9 @@
     display: block;
   }
 
-  .nav__mark {
-    opacity: 1 !important;
-    pointer-events: auto !important;
+  .nav.is-open .nav__mark {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .nav__links {

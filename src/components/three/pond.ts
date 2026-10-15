@@ -123,7 +123,8 @@ const floorFragment = /* glsl */ `
 
 export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const small = window.innerWidth < 760;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 1.75));
   renderer.setClearColor(0x03090c);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -443,7 +444,8 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), 0.75, 0.55, 0.82));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.75, 0.55, 0.82);
+  composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
   const resize = () => {
@@ -452,6 +454,8 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     composer.setSize(w, h);
+    // The glow is soft anyway; half resolution costs a quarter of the fill.
+    bloom.setSize(Math.round(w * renderer.getPixelRatio() * 0.5), Math.round(h * renderer.getPixelRatio() * 0.5));
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     const halfH = CAM_HEIGHT * Math.tan(THREE.MathUtils.degToRad(FOV / 2));
@@ -687,6 +691,7 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
       });
       composer.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
     },
   };
 }

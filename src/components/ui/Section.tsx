@@ -25,15 +25,15 @@ export function Section({ id, kanji, kanjiMeaning, title, intro, aside, classNam
   useGSAP(
     () => {
       gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        // Clip, never transform: a moved panel would throw off every trigger measured inside it.
         gsap.fromTo(
           root.current,
-          { y: 80, scale: 0.96, opacity: 0.4 },
+          { clipPath: "inset(0% 4% 0% 4% round 48px)", opacity: 0.5 },
           {
-            y: 0,
-            scale: 1,
+            clipPath: "inset(0% 0% 0% 0% round 32px)",
             opacity: 1,
             ease: "none",
-            scrollTrigger: { trigger: root.current, start: "top bottom", end: "top 55%", scrub: 0.6 },
+            scrollTrigger: { trigger: root.current, start: "top bottom", end: "top 60%", scrub: 0.5 },
           },
         );
         gsap.from(".shell__kanji", {

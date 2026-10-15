@@ -11,13 +11,20 @@ interface KoiPondProps {
   label?: string;
 }
 
+let webglSupport: boolean | null = null;
+
+/** Probe once per session and free the probe context, so it never counts against the browser's limit. */
 function hasWebGL() {
+  if (webglSupport !== null) return webglSupport;
   try {
     const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+    const gl = (c.getContext("webgl2") || c.getContext("webgl")) as WebGLRenderingContext | null;
+    webglSupport = !!gl;
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
   } catch {
-    return false;
+    webglSupport = false;
   }
+  return webglSupport;
 }
 
 export default function KoiPond({ count, interactive = true, depth, className, label }: KoiPondProps) {

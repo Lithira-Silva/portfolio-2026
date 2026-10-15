@@ -396,6 +396,12 @@
 }
 
 @media (max-width: 760px) {
+  /* On a phone the name holds only over the pond; the chapters scroll free of it. */
+  .climb__track {
+    bottom: auto;
+    height: 100svh;
+  }
+
   .corner {
     font-size: 21vw;
   }
