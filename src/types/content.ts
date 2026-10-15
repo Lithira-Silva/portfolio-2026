@@ -43,6 +43,10 @@ export interface Skill {
   usedIn?: string[];
   /** Other proof, such as a certificate. */
   note?: string;
+  /** File name in public/media/tech/ without .svg */
+  logo?: string;
+  /** Logo is dark-on-transparent; invert it on the dark theme. */
+  mono?: boolean;
 }
 
 export interface Certificate {
@@ -54,6 +58,9 @@ export interface Certificate {
   url?: string;
   /** Copy of the certificate in public/certificates/. */
   pdf?: string;
+  /** First page rendered as an image. */
+  image?: string;
+  skills?: string[];
 }
 
 export interface RecordLine {

@@ -1,4 +1,8 @@
 import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { createKoiGeometry, createKoiMaterials, VARIETIES } from "./koi";
 
 /**
@@ -28,6 +32,8 @@ interface Fish {
   scale: number;
   y: number;
   swim: number;
+  curiosity: number;
+  wake: number;
 }
 
 interface Pellet {
@@ -108,7 +114,7 @@ const floorFragment = /* glsl */ `
     vec3 col = mix(uShallow, uDeep, smoothstep(0.0, 0.55, peb) * 0.6 + 0.2);
     col *= 0.85 + 0.15 * hash(floor(p * 2.2));
     float c = caustic(p * 0.18 + vec2(uTime * 0.01, 0.0), uTime * 0.35);
-    col += vec3(0.42, 0.7, 0.68) * c * 0.5;
+    col += vec3(0.22, 0.7, 0.66) * c * 0.38;
     float far = smoothstep(4.0, 11.0, length(p));
     col = mix(col, uDeep * 0.7, far);
     gl_FragColor = vec4(col, 1.0);
@@ -118,25 +124,27 @@ const floorFragment = /* glsl */ `
 export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x13262d);
+  renderer.setClearColor(0x03090c);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x13262d, 6, 16);
+  scene.fog = new THREE.Fog(0x03090c, 6, 16);
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 60);
   camera.position.set(0, CAM_HEIGHT, 0);
   camera.lookAt(0, 0, 0);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 1.1));
-  const sun = new THREE.DirectionalLight(0xfff4e0, 1.6);
+  scene.add(new THREE.AmbientLight(0x9fc4d0, 0.55));
+  const sun = new THREE.DirectionalLight(0xcfe3ff, 1.1);
   sun.position.set(3, 8, 2);
   scene.add(sun);
 
   // Floor.
   const floorUniforms = {
     uTime: { value: 0 },
-    uDeep: { value: new THREE.Color(0x0f2228) },
-    uShallow: { value: new THREE.Color(0x2b4a50) },
+    uDeep: { value: new THREE.Color(0x041015) },
+    uShallow: { value: new THREE.Color(0x12303a) },
   };
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(40, 40),
@@ -179,15 +187,17 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
       scale,
       y,
       swim: Math.random() * 10,
+      curiosity: 0.3 + Math.random() * 0.7,
+      wake: 0,
     });
   }
 
   // Lily pads with a few lotus flowers.
   const drifters: Drifter[] = [];
-  const padMat = new THREE.MeshStandardMaterial({ color: 0x3d6b4c, roughness: 0.55, side: THREE.DoubleSide });
-  const padMat2 = new THREE.MeshStandardMaterial({ color: 0x527d4f, roughness: 0.55, side: THREE.DoubleSide });
+  const padMat = new THREE.MeshStandardMaterial({ color: 0x2f5e40, roughness: 0.45, side: THREE.DoubleSide });
+  const padMat2 = new THREE.MeshStandardMaterial({ color: 0x3f6f45, roughness: 0.45, side: THREE.DoubleSide });
   const padShadowMat = new THREE.MeshBasicMaterial({ color: 0x041013, transparent: true, opacity: 0.32, depthWrite: false });
-  const petalMat = new THREE.MeshStandardMaterial({ color: 0xf6dde2, roughness: 0.4, emissive: 0x3a1a20, emissiveIntensity: 0.2 });
+  const petalMat = new THREE.MeshStandardMaterial({ color: 0xf6dde2, roughness: 0.4, emissive: 0xffc2cf, emissiveIntensity: 0.35 });
   const petalTipMat = new THREE.MeshStandardMaterial({ color: 0xe98aa0, roughness: 0.4 });
   const seedMat = new THREE.MeshStandardMaterial({ color: 0xf2c94c, roughness: 0.6 });
 
@@ -262,6 +272,111 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
   scene.add(petals);
   const dummy = new THREE.Object3D();
 
+  // Floating paper lanterns (toro nagashi): warm light on the night water.
+  const lanterns: { paper: THREE.MeshStandardMaterial; light: THREE.PointLight; seed: number }[] = [];
+  const woodMat = new THREE.MeshStandardMaterial({ color: 0x2a1a10, roughness: 0.8 });
+  const glowGeo = new THREE.CircleGeometry(1, 48);
+  const glowMat = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uColor: { value: new THREE.Color(0xff9a3c) } },
+    vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+    fragmentShader: "uniform vec3 uColor; varying vec2 vUv; void main(){ float d = length(vUv - 0.5) * 2.0; float a = pow(max(1.0 - d, 0.0), 2.2) * 0.55; gl_FragColor = vec4(uColor * a, a); }",
+  });
+  const lanternCount = opts.count >= 8 ? 3 : 2;
+  for (let i = 0; i < lanternCount; i++) {
+    const g = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.04, 0.26), woodMat);
+    base.position.y = 0.02;
+    const paper = new THREE.MeshStandardMaterial({ color: 0xffe2b8, emissive: 0xff9a3c, emissiveIntensity: 2.6, roughness: 0.9 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.26, 0.2), paper);
+    body.position.y = 0.17;
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 0.24), woodMat);
+    cap.position.y = 0.315;
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.rotation.x = -Math.PI / 2;
+    glow.position.y = 0.012;
+    glow.scale.setScalar(1.1);
+    const light = new THREE.PointLight(0xffa04a, 1.6, 3.2, 1.6);
+    light.position.y = 0.35;
+    g.add(base, body, cap, glow, light);
+    g.position.set((Math.random() - 0.5) * 7, 0, (Math.random() - 0.5) * 3.4);
+    g.rotation.y = Math.random() * Math.PI;
+    scene.add(g);
+    lanterns.push({ paper, light, seed: Math.random() * 100 });
+    drifters.push({ obj: g, vel: new THREE.Vector2(0.05 + Math.random() * 0.03, (Math.random() - 0.5) * 0.02), spin: (Math.random() - 0.5) * 0.04, bob: Math.random() * 10 });
+  }
+
+  // Fireflies: soft additive points drifting above the water.
+  const FLIES = opts.count >= 8 ? 90 : 50;
+  const flyPos = new Float32Array(FLIES * 3);
+  const flySeed = new Float32Array(FLIES);
+  for (let i = 0; i < FLIES; i++) {
+    flyPos.set([(Math.random() - 0.5) * 11, 0.2 + Math.random() * 2.2, (Math.random() - 0.5) * 6], i * 3);
+    flySeed[i] = Math.random() * 100;
+  }
+  const flyGeo = new THREE.BufferGeometry();
+  flyGeo.setAttribute("position", new THREE.BufferAttribute(flyPos, 3));
+  flyGeo.setAttribute("aSeed", new THREE.BufferAttribute(flySeed, 1));
+  const flyUniforms = { uTime: { value: 0 }, uPixel: { value: renderer.getPixelRatio() } };
+  const flies = new THREE.Points(
+    flyGeo,
+    new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: flyUniforms,
+      vertexShader: `
+        uniform float uTime; uniform float uPixel; attribute float aSeed; varying float vA;
+        void main(){
+          vec3 p = position;
+          p.x += sin(uTime * 0.3 + aSeed) * 0.5;
+          p.z += cos(uTime * 0.25 + aSeed * 1.3) * 0.4;
+          p.y += sin(uTime * 0.6 + aSeed * 2.0) * 0.15;
+          vA = 0.35 + 0.65 * pow(0.5 + 0.5 * sin(uTime * 1.7 + aSeed * 5.0), 3.0);
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          gl_PointSize = (9.0 + 6.0 * vA) * uPixel * (4.0 / -mv.z);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `
+        varying float vA;
+        void main(){
+          float d = length(gl_PointCoord - 0.5) * 2.0;
+          float a = pow(max(1.0 - d, 0.0), 2.0) * vA;
+          gl_FragColor = vec4(vec3(1.0, 0.86, 0.45) * a * 1.6, a);
+        }`,
+    }),
+  );
+  scene.add(flies);
+
+  // Moonlit glints on the surface.
+  const glintUniforms = { uTime: { value: 0 } };
+  const glints = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 40),
+    new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: glintUniforms,
+      vertexShader: "varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+      fragmentShader: `
+        uniform float uTime; varying vec3 vW;
+        float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        float n(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.0-2.0*f);
+          return mix(mix(h(i), h(i+vec2(1,0)), u.x), mix(h(i+vec2(0,1)), h(i+vec2(1,1)), u.x), u.y); }
+        void main(){
+          vec2 p = vW.xz * 3.0;
+          float w = n(p + vec2(uTime * 0.4, uTime * 0.2)) * n(p * 1.7 - vec2(uTime * 0.3, -uTime * 0.25));
+          float g = smoothstep(0.42, 0.62, w) * 0.22;
+          gl_FragColor = vec4(vec3(0.75, 0.92, 1.0) * g, g);
+        }`,
+    }),
+  );
+  glints.rotation.x = -Math.PI / 2;
+  glints.position.y = 0.05;
+  scene.add(glints);
+
   // Food and ripples.
   const pellets: Pellet[] = [];
   const pelletGeo = new THREE.SphereGeometry(0.035, 8, 6);
@@ -304,27 +419,39 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
     return raycaster.ray.intersectPlane(surface, hit) ? hit : null;
   };
   let lastTrail = 0;
+  const pointer = new THREE.Vector2();
+  let pointerAt = -10000;
   const onDown = (e: PointerEvent) => {
     const p = toSurface(e.clientX, e.clientY);
     if (p) dropFood(p.x, p.z);
   };
   const onMove = (e: PointerEvent) => {
     const now = performance.now();
-    if (now - lastTrail < 240) return;
+    if (now - lastTrail < 160) return;
     lastTrail = now;
     const p = toSurface(e.clientX, e.clientY);
-    if (p) ripple(p.x, p.z, 0.35, 1.1);
+    if (p) {
+      pointer.set(p.x, p.z);
+      pointerAt = performance.now();
+      ripple(p.x, p.z, 0.35, 1.1);
+    }
   };
   if (opts.interactive) {
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
   }
 
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), 0.75, 0.55, 0.82));
+  composer.addPass(new OutputPass());
+
   const resize = () => {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
+    composer.setSize(w, h);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     const halfH = CAM_HEIGHT * Math.tan(THREE.MathUtils.degToRad(FOV / 2));
@@ -370,6 +497,15 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
         }
       }
 
+      // Curious koi drift toward the pointer.
+      if (!hungry && performance.now() - pointerAt < 2500) {
+        const d = pointer.distanceTo(f.pos);
+        if (d < 3 && d > 0.5) {
+          tmp.copy(pointer).sub(f.pos).normalize().multiplyScalar(1.4 * f.curiosity);
+          steer.add(tmp);
+        }
+      }
+
       // Separation.
       for (const o of fish) {
         if (o === f) continue;
@@ -400,6 +536,13 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
       f.pos.y += Math.sin(f.heading) * f.speed * dt;
 
       f.swim += dt * (2.2 + f.speed * 9);
+
+      // A wake of small rings when a fish darts.
+      f.wake -= dt;
+      if (f.speed > 0.55 && f.wake <= 0) {
+        f.wake = 0.3;
+        ripple(f.pos.x - Math.cos(f.heading) * 0.5 * f.scale, f.pos.y - Math.sin(f.heading) * 0.5 * f.scale, 0.28, 0.8);
+      }
       f.uniforms.uTime.value = time;
       f.uniforms.uSwim.value = f.swim;
       f.uniforms.uTurn.value = THREE.MathUtils.clamp(-f.turnVel * 0.35, -0.5, 0.5);
@@ -471,6 +614,15 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
     });
     petals.instanceMatrix.needsUpdate = true;
 
+    // Lanterns flicker.
+    for (const l of lanterns) {
+      const flick = 2.4 + Math.sin(time * 7 + l.seed) * 0.15 + Math.sin(time * 13.3 + l.seed * 2) * 0.1;
+      l.paper.emissiveIntensity = flick;
+      l.light.intensity = flick * 0.65;
+    }
+    flyUniforms.uTime.value = time;
+    glintUniforms.uTime.value = time;
+
     // Camera dive.
     const d = opts.depth ? opts.depth() : 0;
     camera.position.set(0, CAM_HEIGHT - 3.4 * d, 2.6 * d);
@@ -490,7 +642,7 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
     last = now;
     time += dt;
     update(dt, time);
-    renderer.render(scene, camera);
+    composer.render();
     raf = requestAnimationFrame(frame);
   };
   const start = () => {
@@ -515,7 +667,7 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
 
   // Warm up so the first frame is not a still.
   update(0.016, 0);
-  renderer.render(scene, camera);
+  composer.render();
 
   return {
     dropFood,
@@ -533,6 +685,7 @@ export function createPond(canvas: HTMLCanvasElement, opts: PondOptions) {
         if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
         else mat?.dispose();
       });
+      composer.dispose();
       renderer.dispose();
     },
   };

@@ -7,7 +7,7 @@ export default function SkillsPage() {
   return (
     <>
       <PageTitle title="Skills" intro="The languages, frameworks and tools I build with." />
-      <Skills />
+      <Skills withTable />
     </>
   );
 }

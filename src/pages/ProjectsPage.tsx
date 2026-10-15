@@ -8,7 +8,7 @@ export default function ProjectsPage() {
   return (
     <>
       <PageTitle title="Projects" intro={`${projects.length} projects, from a live fitness site to an AI task manager in progress.`} />
-      <Projects showTitle={false} />
+      <Projects />
     </>
   );
 }

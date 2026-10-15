@@ -104,6 +104,13 @@ export function createKoiGeometry() {
     }, 2);
   }
 
+  // Dorsal fin: a low translucent sail along the back.
+  finGrid(4, 14, (u, v) => {
+    const s = 0.3 + (v * 0.5 + 0.5) * 0.36;
+    const sail = Math.sin(Math.PI * (v * 0.5 + 0.5)) * 0.06;
+    return [0.5 - s, radius(s) * 0.78 + sail * u, 0, s];
+  }, 3);
+
   // Pelvic fins: smaller, further back.
   for (const side of [1, -1]) {
     const t0 = 0.5;
@@ -140,6 +147,7 @@ const vertex = /* glsl */ `
   varying float vFin;
   varying float vSpine;
   varying vec3 vN;
+  varying vec3 vView;
 
   void main() {
     vec3 p = position;
@@ -150,7 +158,7 @@ const vertex = /* glsl */ `
     float t = aSpine;
 
     // Pectoral and pelvic fins paddle.
-    if (aPart > 1.5) {
+    if (aPart > 1.5 && aPart < 2.5) {
       float flap = sin(uTime * 2.2 + uPhase * 3.0);
       p.y += flap * 0.05 * aFin;
       p.x -= (flap * 0.5 + 0.5) * 0.04 * aFin;
@@ -168,7 +176,9 @@ const vertex = /* glsl */ `
     }
 
     vN = normalize(normalMatrix * normal);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    vView = normalize(-mv.xyz);
+    gl_Position = projectionMatrix * mv;
   }
 `;
 
@@ -182,6 +192,7 @@ const fragment = /* glsl */ `
   varying float vFin;
   varying float vSpine;
   varying vec3 vN;
+  varying vec3 vView;
 
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float noise(vec2 p) {
@@ -244,9 +255,13 @@ const fragment = /* glsl */ `
       col = mix(col, vec3(0.05), 1.0 - smoothstep(0.010, 0.014, length(e)));
     }
 
-    // Light from above.
-    float light = 0.55 + 0.55 * max(dot(normalize(vN), normalize(vec3(0.25, 1.0, 0.35))), 0.0);
-    if (v == 4) light += pow(max(vN.y, 0.0), 12.0) * 0.4;
+    // Moonlight from above (view space: the camera looks straight down).
+    vec3 N = normalize(vN);
+    vec3 V = normalize(vView);
+    vec3 L = normalize(vec3(0.3, -0.35, 1.0));
+    float light = 0.42 + 0.5 * max(dot(N, L), 0.0);
+    float spec = pow(max(dot(N, normalize(L + V)), 0.0), 48.0) * (v == 4 ? 0.9 : 0.4);
+    float rim = pow(1.0 - max(dot(N, V), 0.0), 2.5);
 
     float alpha = 1.0;
     if (vPart > 0.5) {
@@ -254,11 +269,14 @@ const fragment = /* glsl */ `
       float rays = 0.94 + 0.06 * sin(vPat.y * 90.0 + vPat.x * 30.0);
       col = mix(col, white, 0.3) * rays;
       alpha = (0.7 - 0.45 * vFin);
-      light = 1.0;
+      light = 0.85;
+      spec = 0.0;
+      rim = 0.0;
     }
 
-    vec3 water = vec3(0.10, 0.20, 0.23);
-    col = mix(col * light, water, uDim);
+    vec3 water = vec3(0.03, 0.09, 0.11);
+    col = col * light + vec3(1.0, 0.96, 0.9) * spec + vec3(0.35, 0.85, 0.8) * rim * 0.28;
+    col = mix(col, water, uDim);
     gl_FragColor = vec4(col, alpha);
   }
 `;

@@ -38,6 +38,9 @@ export function Navbar() {
   return (
     <header ref={nav} className={`nav ${pathname === "/" ? "nav--home" : ""} ${open ? "is-open" : ""}`}>
       <TLink to="/" className="nav__mark display" aria-label={`${site.name}, home`}>
+        <span className="nav__mark-kanji" aria-hidden="true">
+          鯉
+        </span>
         {site.name}
       </TLink>
       <button

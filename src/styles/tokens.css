@@ -1,29 +1,44 @@
-/* Frost and slate. One ground, one ink, one accent. The koi colour belongs to the fish. */
+/* Night pond. Deep water ground, moonlit ink, koi-orange action, lantern gold, jade teal. */
 :root {
-  --bg: #f7f9fa;
-  --surface: #ecf0f2;
-  --ink: #1f3038;
-  --ink-deep: #13262d;
-  --muted: #5d6b72;
-  --accent: #0d7480;
-  --accent-ink: #ffffff;
-  --koi: #e2552b;
-  --seal: #c8322a;
+  color-scheme: dark;
+
+  --bg: #050c0f;
+  --bg-2: #071216;
+  --surface: #0a171b;
+  --surface-2: #0f2127;
+  --surface-3: #142c33;
+  --line: rgba(170, 214, 220, 0.1);
+  --line-strong: rgba(170, 214, 220, 0.22);
+
+  --ink: #eaf2f3;
+  --ink-soft: #c4d3d6;
+  --muted: #86a0a6;
+
+  --accent: #ff6b3d;
+  --accent-ink: #1a0802;
+  --gold: #f4b450;
+  --jade: #3cc7b4;
+  --koi: #ff6b3d;
+  --seal: #d8392b;
 
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-text: "Barlow", system-ui, sans-serif;
+  --font-jp: "Noto Serif JP", serif;
 
-  /* Five steps, never more. */
   --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
   --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
   --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
-  --step-head: clamp(2.5rem, 1.2rem + 5vw, 5.5rem);
+  --step-head: clamp(2.75rem, 1.2rem + 5.4vw, 6rem);
   --step-monument: clamp(5.5rem, 15vw, 16rem);
 
-  --gutter: clamp(16px, 2vw, 28px);
-  --section: clamp(120px, 14vw, 220px);
+  --gutter: clamp(14px, 2vw, 28px);
+  --pad: clamp(24px, 5vw, 80px);
+  --gap: clamp(16px, 2vw, 24px);
+  --section: clamp(96px, 12vw, 180px);
+  --radius: clamp(20px, 2.4vw, 32px);
+  --radius-sm: 16px;
   --measure: 62ch;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --nav-h: 64px;
+  --nav-h: 76px;
 }

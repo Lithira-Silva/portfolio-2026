@@ -1,20 +1,18 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { site } from "@/data/site";
-import { useReveal } from "@/hooks/useReveal";
+import { Section } from "@/components/ui/Section";
 import { Arrow, Button } from "@/components/ui/Button";
 
 interface ContactProps {
   withComposer?: boolean;
 }
 
-/** Address in display rows. No form backend: the composer writes an email for you. */
-export function Contact({ withComposer = false }: ContactProps) {
-  const root = useRef<HTMLElement>(null);
-  useReveal(root);
+/** A big invitation, the ways to reach me, and a composer that writes the email for you. */
+export function Contact({ withComposer = true }: ContactProps) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
 
-  const subject = encodeURIComponent(name ? `Hello from ${name}` : "Hello");
+  const subject = encodeURIComponent(name ? `Hello from ${name}` : "Hello Lithira");
   const mail = `mailto:${site.email}?subject=${subject}&body=${encodeURIComponent(message)}`;
 
   const onSubmit = (e: FormEvent) => {
@@ -23,60 +21,76 @@ export function Contact({ withComposer = false }: ContactProps) {
   };
 
   const rows = [
-    { text: site.email, href: `mailto:${site.email}` },
-    site.phone ? { text: site.phone, href: `tel:${site.phone.replace(/\s/g, "")}` } : null,
-    ...site.socials.map((s) => ({ text: s.href.replace(/^https?:[/][/]/, ""), href: s.href })),
-    { text: `${site.location}, ${site.timezone}` },
-    { text: site.availability },
-  ].filter(Boolean) as Array<{ text: string; href?: string }>;
+    { label: "Email", text: site.email, href: `mailto:${site.email}` },
+    ...site.socials.map((s) => ({ label: s.label, text: s.href.replace(/^https?:[/][/]/, ""), href: s.href })),
+    { label: "Based in", text: `${site.location}, ${site.timezone}` },
+  ];
 
   return (
-    <section ref={root} id="contact" className="contact" aria-labelledby="contact-title">
-      <h2 id="contact-title" className="sr-only">
-        Contact
-      </h2>
-      <ul className="contact__rows">
-        {rows.map((r) => (
-          <li key={r.text} className="contact__row" data-reveal>
-            {r.href ? (
-              <a href={r.href} className="contact__text display">
-                {r.text}
-              </a>
-            ) : (
-              <span className="contact__text display">{r.text}</span>
-            )}
-          </li>
-        ))}
-        <li className="contact__row contact__row--hello" data-reveal>
-          <a href={mail} className="contact__text display contact__hello">
-            Say hello
-            <span className="contact__round" aria-hidden="true">
-              <Arrow />
-            </span>
-          </a>
-        </li>
-      </ul>
+    <Section
+      id="contact"
+      kanji="連絡"
+      kanjiMeaning="renraku: contact"
+      title={
+        <>
+          Let&rsquo;s build
+          <br />
+          something
+        </>
+      }
+      intro={site.availability + ". Internships, collaborations or a question about the koi."}
+      className="contact"
+    >
+      <div className="contact__grid">
+        <ul className="contact__rows">
+          {rows.map((r) => (
+            <li key={r.label} data-reveal>
+              {r.href ? (
+                <a className="contact__row" href={r.href} target={r.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+                  <span className="small muted">{r.label}</span>
+                  <span className="contact__value">{r.text}</span>
+                  <span className="contact__go" aria-hidden="true">
+                    <Arrow />
+                  </span>
+                </a>
+              ) : (
+                <div className="contact__row">
+                  <span className="small muted">{r.label}</span>
+                  <span className="contact__value">{r.text}</span>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
 
-      {withComposer && (
-        <form className="composer wrap" onSubmit={onSubmit} aria-label="Write me an email">
-          <p className="lead" data-reveal>
-            Rather write it here? This opens your email app with the message filled in.
-          </p>
-          <label data-reveal>
-            <span className="small">Your name</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
-          </label>
-          <label data-reveal>
-            <span className="small">What are you building?</span>
-            <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={5} />
-          </label>
-          <div data-reveal>
-            <Button href={mail} onClick={(e) => { e.preventDefault(); window.location.href = mail; }}>
+        {withComposer && (
+          <form className="composer" onSubmit={onSubmit} aria-label="Write me an email" data-reveal>
+            <p className="small muted">This opens your email app with the message filled in.</p>
+            <label>
+              <span className="small">Your name</span>
+              <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Jane from Acme" />
+            </label>
+            <label>
+              <span className="small">What are you building?</span>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={5}
+                placeholder="A few lines about the project or role"
+              />
+            </label>
+            <Button
+              href={mail}
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = mail;
+              }}
+            >
               Open in my email
             </Button>
-          </div>
-        </form>
-      )}
-    </section>
+          </form>
+        )}
+      </div>
+    </Section>
   );
 }

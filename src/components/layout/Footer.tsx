@@ -3,6 +3,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { site } from "@/data/site";
 import { Button } from "@/components/ui/Button";
 import { useReveal } from "@/hooks/useReveal";
+import KoiPond from "@/components/three/KoiPond";
 
 export function Footer() {
   const root = useRef<HTMLElement>(null);
@@ -30,6 +31,8 @@ export function Footer() {
 
   return (
     <footer ref={root} className="footer" data-ground="dark">
+      <KoiPond className="footer__pond" count={5} interactive={false} label="Koi swimming under the footer" />
+      <div className="footer__veil" aria-hidden="true" />
       <div className="footer__top">
         <div className="footer__invite">
           <p className="footer__line display" data-split>

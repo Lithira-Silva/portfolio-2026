@@ -1,104 +1,133 @@
-import { Fragment, useRef } from "react";
+import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { projects } from "@/data/projects";
-import { useReveal } from "@/hooks/useReveal";
+import { skills } from "@/data/skills";
+import { Section } from "@/components/ui/Section";
 import { ArrowLink } from "@/components/ui/Button";
 
 interface ProjectsProps {
   featuredOnly?: boolean;
-  showTitle?: boolean;
 }
 
-/** Loose scatter with pauses: one project at a time, each at its own width and side. */
-export function Projects({ featuredOnly = false, showTitle = true }: ProjectsProps) {
-  const root = useRef<HTMLElement>(null);
-  useReveal(root);
+/** Find a logo for a stack entry such as "React 18" or "Next.js 14". */
+const logoFor = (entry: string) =>
+  skills.find((s) => s.logo && entry.toLowerCase().startsWith(s.name.split(" ")[0].toLowerCase()));
+
+/** Stacking cards: each project pins under the next, shrinking back as it is covered. */
+export function Projects({ featuredOnly = false }: ProjectsProps) {
   const list = featuredOnly ? projects.filter((p) => p.featured) : projects;
+  const stack = useRef<HTMLOListElement>(null);
 
   useGSAP(
     () => {
-      gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.utils.toArray<HTMLElement>(".work__item").forEach((item) => {
-          const img = item.querySelector("img");
+      gsap.matchMedia().add("(prefers-reduced-motion: no-preference) and (min-width: 761px)", () => {
+        const cards = gsap.utils.toArray<HTMLElement>(".work-card");
+        cards.forEach((card, i) => {
+          if (i === cards.length - 1) return;
+          gsap.to(card.querySelector(".work-card__inner"), {
+            scale: 0.92,
+            opacity: 0.35,
+            ease: "none",
+            scrollTrigger: { trigger: cards[i + 1], start: "top bottom", end: "top 20%", scrub: true },
+          });
+        });
+        cards.forEach((card) => {
           gsap.fromTo(
-            img,
-            { yPercent: -7 },
+            card.querySelector(".browser__shot img"),
+            { yPercent: -6, scale: 1.12 },
             {
-              yPercent: 7,
+              yPercent: 6,
+              scale: 1.12,
               ease: "none",
-              scrollTrigger: { trigger: item, start: "top bottom", end: "bottom top", scrub: true },
+              scrollTrigger: { trigger: card, start: "top bottom", end: "bottom top", scrub: true },
             },
           );
-          gsap.from(item.querySelector(".work__frame"), {
-            clipPath: "inset(12% 12% 12% 12%)",
-            duration: 1.4,
-            ease: "expo.out",
-            scrollTrigger: { trigger: item, start: "top 85%", once: true },
-          });
         });
       });
     },
-    { scope: root },
+    { scope: stack },
   );
 
   return (
-    <section ref={root} id="work" className="work wrap" aria-labelledby="work-title">
-      <h2 id="work-title" className={showTitle ? "work__title head" : "sr-only"} data-split={showTitle || undefined}>
-        Work
-      </h2>
-      <ol className="work__list">
+    <Section
+      id="work"
+      kanji="作品"
+      kanjiMeaning="sakuhin: works"
+      title="Selected work"
+      intro="I learn by building: each project here pushed me into a new part of the stack."
+      aside={featuredOnly ? <ArrowLink to="/projects">All project details</ArrowLink> : undefined}
+    >
+      <ol ref={stack} className="work-stack">
         {list.map((p, i) => (
-          <Fragment key={p.slug}>
-          <li className={`work__item work__item--${i % 3}`}>
-            <p className="work__name small muted" data-reveal>
-              {p.title} · {p.year}
-              {p.status && ` · ${p.status}`}
-            </p>
-            <a
-              className="work__frame"
-              href={p.live ?? p.repo ?? "#work"}
-              target={p.live || p.repo ? "_blank" : undefined}
-              rel="noreferrer"
-              aria-label={`${p.title}: open project`}
-              style={{ aspectRatio: p.ratio }}
-            >
-              <span className="work__zoom">
-                <img src={p.image} alt={p.alt} width={1600} height={1066} loading="lazy" />
-              </span>
-            </a>
-            <div className="work__meta" data-reveal>
-              <p>{p.summary}</p>
-              <p className="small muted">
-                {p.role}
-                {p.stack.length > 0 && ` · ${p.stack.join(", ")}`}
-              </p>
-              <p className="work__links small">
-                {p.live && (
-                  <a href={p.live} target="_blank" rel="noreferrer">
-                    Live site
-                  </a>
+          <li key={p.slug} className="work-card" style={{ top: `calc(var(--nav-h) + ${i * 22}px)` }}>
+            <article className="work-card__inner">
+              <div className="work-card__info">
+                <p className="work-card__meta small">
+                  <span className="tabular">{String(p.year)}</span>
+                  <span>{p.role}</span>
+                  {p.status && (
+                    <span className={`status status--${p.status === "Live" ? "live" : "wip"}`}>{p.status}</span>
+                  )}
+                </p>
+                <h3 className="work-card__title display">{p.title}</h3>
+                <p className="work-card__summary">{p.summary}</p>
+                {p.stack.length > 0 && (
+                  <ul className="stack-chips" aria-label="Built with">
+                    {p.stack.map((s) => {
+                      const logo = logoFor(s);
+                      return (
+                        <li key={s} className="stack-chip small">
+                          {logo && (
+                            <img
+                              className={logo.mono ? "is-mono" : undefined}
+                              src={`/media/tech/${logo.logo}.svg`}
+                              alt=""
+                              width={16}
+                              height={16}
+                              loading="lazy"
+                            />
+                          )}
+                          {s}
+                        </li>
+                      );
+                    })}
+                  </ul>
                 )}
-                {p.repo && (
-                  <a href={p.repo} target="_blank" rel="noreferrer">
-                    Source
-                  </a>
-                )}
-              </p>
-            </div>
+                <p className="work-card__links">
+                  {p.live && (
+                    <ArrowLink href={p.live} target="_blank" rel="noreferrer">
+                      Live site
+                    </ArrowLink>
+                  )}
+                  {p.repo && (
+                    <ArrowLink href={p.repo} target="_blank" rel="noreferrer">
+                      Source code
+                    </ArrowLink>
+                  )}
+                  {!p.live && !p.repo && <span className="small muted">Links coming soon</span>}
+                </p>
+              </div>
+
+              <div className="browser" data-cursor="View">
+                <div className="browser__bar" aria-hidden="true">
+                  <span className="browser__dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <span className="browser__url small">{p.live ? p.live.replace(/^https?:[/][/]/, "") : `${p.slug}.app`}</span>
+                </div>
+                <div className="browser__shot">
+                  <img src={p.image} alt={p.alt} width={1600} height={1000} loading="lazy" />
+                  <span className="browser__index display" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+              </div>
+            </article>
           </li>
-          {i === 1 && (
-            <li className="work__remark lead" data-reveal>
-              I learn by building: each project here pushed me into a new part of the stack.
-            </li>
-          )}
-          </Fragment>
         ))}
       </ol>
-      {featuredOnly && (
-        <div className="work__more" data-reveal>
-          <ArrowLink to="/projects">Project details</ArrowLink>
-        </div>
-      )}
-    </section>
+    </Section>
   );
 }

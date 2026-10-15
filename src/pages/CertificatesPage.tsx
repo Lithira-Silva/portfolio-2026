@@ -7,7 +7,7 @@ export default function CertificatesPage() {
   return (
     <>
       <PageTitle title="Certified" intro="Courses and programmes I have completed, with the certificates to show it." />
-      <Certificates withIndex />
+      <Certificates />
     </>
   );
 }

@@ -3,6 +3,8 @@ import { routes } from "@/app/routes";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { TransitionProvider } from "@/components/layout/Transition";
+import { Cursor } from "@/components/ui/Cursor";
+import { Preloader } from "@/components/ui/Preloader";
 import { useLenis } from "@/hooks/useLenis";
 
 function Shell() {
@@ -27,6 +29,9 @@ export default function App() {
   return (
     <TransitionProvider>
       <Shell />
+      <Cursor />
+      <div className="grain" aria-hidden="true" />
+      <Preloader />
     </TransitionProvider>
   );
 }
