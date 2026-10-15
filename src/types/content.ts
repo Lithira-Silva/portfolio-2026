@@ -30,6 +30,8 @@ export interface Project {
   stack: string[];
   image: string;
   alt: string;
+  /** Set for a real screenshot: shown whole at this width/height ratio, without the parallax zoom. */
+  screenshot?: string;
   ratio: Ratio;
   live?: string;
   repo?: string;

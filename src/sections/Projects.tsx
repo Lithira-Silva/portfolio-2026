@@ -33,7 +33,7 @@ export function Projects({ featuredOnly = false }: ProjectsProps) {
         });
         cards.forEach((card) => {
           gsap.fromTo(
-            card.querySelector(".browser__shot img"),
+            card.querySelector(".browser__shot:not(.is-shot) img"),
             { yPercent: -6, scale: 1.12 },
             {
               yPercent: 6,
@@ -116,7 +116,10 @@ export function Projects({ featuredOnly = false }: ProjectsProps) {
                   </span>
                   <span className="browser__url small">{p.live ? p.live.replace(/^https?:[/][/]/, "") : `${p.slug}.app`}</span>
                 </div>
-                <div className="browser__shot">
+                <div
+                  className={`browser__shot ${p.screenshot ? "is-shot" : ""}`}
+                  style={p.screenshot ? { aspectRatio: p.screenshot } : undefined}
+                >
                   <img src={p.image} alt={p.alt} width={1600} height={1000} loading="lazy" />
                   <span className="browser__index display" aria-hidden="true">
                     {String(i + 1).padStart(2, "0")}
